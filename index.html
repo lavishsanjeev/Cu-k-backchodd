@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Now Playing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-primary: #07090e;
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e1035 0%, #0b0d17 50%, #05060a 100%);
+      --accent-glow: #8a2be2;
+      --accent-cyan: #00f2fe;
+      --accent-pink: #ff2a85;
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.6);
+      --glass-bg: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      min-height: 100vh;
+      width: 100vw;
+      background: var(--bg-primary);
+      background-image: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Ambient background glows */
+    .ambient-sphere {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      z-index: 0;
+      pointer-events: none;
+      animation: floatAura 12s ease-in-out infinite alternate;
+    }
+
+    .sphere-1 {
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, #7928ca, #ff0080);
+      top: -100px;
+      right: -80px;
+    }
+
+    .sphere-2 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, #0070f3, #00dfd8);
+      bottom: -100px;
+      left: -80px;
+      animation-delay: -5s;
+    }
+
+    @keyframes floatAura {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+      50% {
+        transform: translate(30px, 40px) scale(1.1);
+      }
+      100% {
+        transform: translate(-20px, -30px) scale(0.95);
+      }
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 90%;
+      max-width: 420px;
+      padding: 38px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+                  0 0 30px rgba(121, 40, 202, 0.15),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* Vinyl / Disc Artwork Display */
+    .disc-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .glow-ring {
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #ff0080, #7928ca, #00f2fe, #ff0080);
+      opacity: 0.6;
+      filter: blur(16px);
+      animation: spinRing 6s linear infinite;
+    }
+
+    @keyframes spinRing {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .vinyl {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #111 28%, #1d1d1d 29%, #151515 32%, #222 55%, #181818 70%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6),
+                  inset 0 0 10px rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: spinVinyl 8s linear infinite;
+    }
+
+    @keyframes spinVinyl {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .vinyl::before {
+      content: '';
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    .vinyl::after {
+      content: '';
+      position: absolute;
+      inset: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+    }
+
+    .disc-center {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff0080, #7928ca);
+      box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .disc-center-dot {
+      width: 18px;
+      height: 18px;
+      background: #0b0d17;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.85);
+      z-index: 2;
+    }
+
+    .music-icon {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.9);
+      opacity: 0.3;
+      transform: scale(2.2);
+    }
+
+    /* Sound Frequency Wave Bars */
+    .visualizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 38px;
+      margin-bottom: 22px;
+    }
+
+    .bar {
+      width: 4px;
+      height: 12px;
+      background: linear-gradient(to top, #7928ca, #00f2fe);
+      border-radius: 99px;
+      animation: soundWave 1.2s ease-in-out infinite alternate;
+    }
+
+    .bar:nth-child(1) { animation-delay: 0.1s; }
+    .bar:nth-child(2) { animation-delay: 0.3s; }
+    .bar:nth-child(3) { animation-delay: 0.5s; }
+    .bar:nth-child(4) { animation-delay: 0.2s; }
+    .bar:nth-child(5) { animation-delay: 0.6s; }
+    .bar:nth-child(6) { animation-delay: 0.4s; }
+    .bar:nth-child(7) { animation-delay: 0.7s; }
+    .bar:nth-child(8) { animation-delay: 0.15s; }
+    .bar:nth-child(9) { animation-delay: 0.35s; }
+    .bar:nth-child(10) { animation-delay: 0.55s; }
+    .bar:nth-child(11) { animation-delay: 0.25s; }
+    .bar:nth-child(12) { animation-delay: 0.65s; }
+    .bar:nth-child(13) { animation-delay: 0.45s; }
+
+    @keyframes soundWave {
+      0% { height: 6px; }
+      100% { height: 36px; }
+    }
+
+    /* Track Information */
+    .track-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .track-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      margin-bottom: 20px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00f2fe;
+      box-shadow: 0 0 10px #00f2fe;
+      animation: pulseGlow 1.5s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    /* Progress bar */
+    .progress-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #7928ca, #00f2fe);
+      border-radius: 99px;
+      transition: width 0.2s linear;
+    }
+
+    .time-info {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Background Glows -->
+  <div class="ambient-sphere sphere-1"></div>
+  <div class="ambient-sphere sphere-2"></div>
+
+  <!-- Audio Element configured for instant autoplay -->
+  <audio id="audioPlayer" src="song.mp3" autoplay preload="auto" playsinline loop></audio>
+
+  <!-- Main Card (No play or pause buttons) -->
+  <div class="container" id="playerCard">
+    <!-- Spinning Vinyl Disc Artwork -->
+    <div class="disc-wrapper">
+      <div class="glow-ring"></div>
+      <div class="vinyl" id="vinylDisc">
+        <div class="disc-center">
+          <svg class="music-icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
+          <div class="disc-center-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Animated Visualizer Waves -->
+    <div class="visualizer" id="visualizer">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+
+    <!-- Song Info -->
+    <h1 class="track-title" id="trackTitle">Now Playing</h1>
+    <div class="track-status" id="trackStatus">
+      <span class="pulse-dot"></span>
+      <span id="statusText">Playing</span>
+    </div>
+
+    <!-- Live Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="time-info">
+      <span id="currentTime">0:00</span>
+      <span id="duration">--:--</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const audio = document.getElementById('audioPlayer');
+      const progressFill = document.getElementById('progressFill');
+      const currentTimeEl = document.getElementById('currentTime');
+      const durationEl = document.getElementById('duration');
+
+      // Set volume to max
+      audio.volume = 1.0;
+
+      function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+
+      // Track progress
+      audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+          const percent = (audio.currentTime / audio.duration) * 100;
+          progressFill.style.width = percent + '%';
+          currentTimeEl.textContent = formatTime(audio.currentTime);
+        }
+      });
+
+      audio.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audio.duration);
+      });
+
+      // Core instant autoplay function
+      function startAudio() {
+        if (!audio.paused) return;
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            // Silently handled: will auto-resume on first natural user contact
+          });
+        }
+      }
+
+      // 1. Instant execution right away
+      startAudio();
+
+      // 2. Trigger on all page loading stages
+      document.addEventListener('DOMContentLoaded', startAudio);
+      window.addEventListener('load', startAudio);
+      window.addEventListener('pageshow', startAudio);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) startAudio();
+      });
+
+      // 3. Keep trying continuously for the first 2 seconds
+      const timer = setInterval(() => {
+        if (!audio.paused) {
+          clearInterval(timer);
+        } else {
+          startAudio();
+        }
+      }, 200);
+
+      setTimeout(() => clearInterval(timer), 3000);
+
+      // 4. In case the browser holds back sound until the user touches the device screen:
+      // Silently start the audio on ANY background touch, swipe, or movement with ZERO buttons or prompts
+      const silentEvents = ['touchstart', 'touchend', 'touchmove', 'pointerdown', 'mousedown', 'click', 'scroll', 'keydown'];
+      
+      function onSilentTouch() {
+        startAudio();
+        if (!audio.paused) {
+          silentEvents.forEach(evt => window.removeEventListener(evt, onSilentTouch, { capture: true }));
+        }
+      }
+
+      silentEvents.forEach(evt => {
+        window.addEventListener(evt, onSilentTouch, { passive: true, capture: true });
+        document.addEventListener(evt, onSilentTouch, { passive: true, capture: true });
+      });
+    })();
+  </script>
+</body>
+</html>
